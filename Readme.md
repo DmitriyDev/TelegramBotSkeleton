@@ -1,16 +1,16 @@
-##Skeleton for telegram bot
+# Skeleton for telegram bot
 
-####Deployment
+## Deployment
 
-###### Step 1. Create and fill .env (from .env.dist)
-###### Step 2. Run docker-compose
+#### Step 1. Create and fill .env (from .env.dist)
+#### Step 2. Run docker-compose
 ```docker-compose up -d```
 
----
 
-#### Add new endpoint for command
 
-###### Step 1. Add handler function to bot_processor
+## Add new endpoint for command
+
+#### Step 1. Add handler function to bot_processor
 
 ```
 func (bp *BotProcessor) NewEndpointHandler(m *tb.Message) {
@@ -19,7 +19,7 @@ func (bp *BotProcessor) NewEndpointHandler(m *tb.Message) {
 
 ```
 
-###### Step 2. Update ```config.yaml``` (add new config for endpoints)
+#### Step 2. Update ```config.yaml``` (add new config for endpoints)
 
 ```
 
@@ -41,4 +41,4 @@ admin       (true/false) If true, this command would be not allowed for non-admi
 visible     (true/false) Allowed to execute, but not displayed on /start/help/hello command responses
 ```
 
-###### Step 3. Rebuild and restart docker container
+#### Step 3. Rebuild and restart docker container
