@@ -1,0 +1,25 @@
+commands:
+  - name: start
+    command: /start
+    description: Выводит стартовое сообщение
+    handler: InfoHandler
+    admin: false
+    visible: true
+  - name: hello
+    command: /hello
+    description: Выводит приветствие
+    handler: InfoHandler
+    admin: false
+    visible: true
+  - name: help
+    command: /help
+    description: Список доступных комманд
+    handler: InfoHandler
+    admin: false
+    visible: true
+  - name: info
+    command: /info
+    description: Выводит информацию о боте
+    handler: InfoHandler
+    admin: false
+    visible: true
