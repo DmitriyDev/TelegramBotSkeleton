@@ -23,3 +23,9 @@ commands:
     handler: InfoHandler
     admin: false
     visible: true
+  - name: test_events
+    command: /test_events
+    description: Запускает набор тестовых внутренних ивентов
+    handler: TestEventHandler
+    admin: true
+    visible: true

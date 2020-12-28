@@ -4,13 +4,17 @@ import (
 	"fmt"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"reflect"
+	"sort"
+	"strconv"
 	"time"
 )
 
 type BotProcessor struct {
-	bot      *tb.Bot
-	handlers map[string]BotHandler
-	UserList UserList
+	Token        string
+	bot          *tb.Bot
+	handlers     map[string]BotHandler
+	UserList     UserList
+	eventHandler EventHandler
 }
 
 type BotHandler struct {
@@ -22,7 +26,7 @@ type BotHandler struct {
 	isVisible   bool
 }
 
-func GetBotProcessor(token string) BotProcessor {
+func (bp *BotProcessor) init(token string, ul UserList) {
 	b, err := tb.NewBot(tb.Settings{
 		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
@@ -31,15 +35,17 @@ func GetBotProcessor(token string) BotProcessor {
 	if err != nil {
 		panic(err)
 	}
+	eh := EventHandler{}
+	eh.init()
 
-	bp := BotProcessor{
-		b,
-		map[string]BotHandler{},
-		UserList{},
-	}
+	bp.bot = b
+	bp.UserList = ul
+	bp.handlers = map[string]BotHandler{}
+	bp.eventHandler = eh
+
+	go bp.internalEvenHandlerListener()
+
 	bp.createHandlers()
-
-	return bp
 }
 
 func (bp *BotProcessor) createHandlers() {
@@ -107,10 +113,54 @@ func (bp *BotProcessor) commandsForUser(u *tb.User) []BotHandler {
 	return uHandlers
 }
 
-func (bp *BotProcessor) InfoHandler(m *tb.Message) {
-	iMessage := "Список доступных комманд.\n"
-	for _, bh := range bp.commandsForUser(m.Sender) {
-		iMessage += bh.command + " " + bh.description + "\n"
+func (bp *BotProcessor) registerEvent(u *tb.User, name string, message string) {
+	ie := InternalEvent{
+		name,
+		message,
+		time.Now(),
 	}
-	bp.Send(m.Sender, iMessage)
+
+	bp.eventHandler.AddEventToUser(ie, u)
+	toLog("Register event " + name + " for user #" + strconv.Itoa(u.ID))
+}
+
+func (bp *BotProcessor) registerEventForAll(name string, message string) {
+	ie := InternalEvent{
+		name,
+		message,
+		time.Now(),
+	}
+
+	bp.eventHandler.AddEventToAll(ie, &bp.UserList)
+	toLog("Register event " + name + " for all users")
+}
+
+func (bp *BotProcessor) internalEvenHandlerListener() {
+	for true {
+		time.Sleep(time.Second)
+
+		if !bp.eventHandler.HasUnfinishedEvents() {
+			continue
+		}
+
+		for _, ue := range bp.eventHandler.GetAllEvents() {
+
+			keys := make([]int64, 0, len(ue.events))
+
+			for k := range ue.events {
+				keys = append(keys, k)
+			}
+			sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+
+			for i := range keys {
+				id := keys[i]
+				ub := ue.events[id]
+				bp.Send(ue.user, ub.message)
+				toLog(fmt.Sprintf("event (#%d) %s finished", id, ub.name))
+				ue.DeleteEvent(id)
+				toLog(fmt.Sprintf("event (#%d) removed from queue", id))
+			}
+		}
+
+	}
 }

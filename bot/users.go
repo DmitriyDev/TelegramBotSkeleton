@@ -9,6 +9,9 @@ type UserList struct {
 	users map[int]tb.User
 }
 
+func (ul *UserList) init() {
+	ul.users = map[int]tb.User{}
+}
 func (ul *UserList) append(u tb.User) {
 	ul.users[u.ID] = u
 }

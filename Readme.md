@@ -3,12 +3,17 @@
 ## Deployment
 
 #### Step 1. Create and fill .env (from .env.dist)
+```
+BOT_TOKEN=<telegram api token for bots>
+MASTER_USER=<id of admin user>
+```
+
 #### Step 2. Run docker-compose
 ```docker-compose up -d```
 
 
 
-## Add new endpoint for command
+## Add new endpoint for telegram command
 
 #### Step 1. Add handler function to bot_processor
 
@@ -19,18 +24,8 @@ func (bp *BotProcessor) NewEndpointHandler(m *tb.Message) {
 
 ```
 
-#### Step 2. Update ```config.yaml``` (add new config for endpoints)
+#### Step 2. Update ```config.yaml``` (add new config for endpoints
 
-```
-
-  - name: newCommand
-    command: /newCommand
-    description: New command description
-    handler: NewEndpointHandler
-    admin: false
-    visible: true
-
-```
 
 ```
 name        Command name
@@ -41,4 +36,20 @@ admin       (true/false) If true, this command would be not allowed for non-admi
 visible     (true/false) Allowed to execute, but not displayed on /start/help/hello command responses
 ```
 
+
+Example:
+```
+  - name: newCommand
+    command: /newCommand
+    description: New command description
+    handler: NewEndpointHandler
+    admin: false
+    visible: true
+
+```
+
 #### Step 3. Rebuild and restart docker container
+```
+docker-compose down
+docker-compose up -d --build
+```

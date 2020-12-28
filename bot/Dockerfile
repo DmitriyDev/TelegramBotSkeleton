@@ -4,6 +4,7 @@ WORKDIR /go/src/app
 COPY . .
 
 RUN go get -u gopkg.in/tucnak/telebot.v2
+RUN go get -u gopkg.in/yaml.v2
 
 RUN go get -d -v ./...
 RUN go install -v ./...
