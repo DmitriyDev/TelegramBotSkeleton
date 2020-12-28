@@ -11,7 +11,7 @@ func (bp *BotProcessor) InfoHandler(m *tb.Message) {
 }
 
 func (bp *BotProcessor) TestEventHandler(m *tb.Message) {
-	iMessage := "Event registration started \n"
+	bp.Send(m.Sender, "Event registration started \n")
 
 	bp.UserList.append(*m.Sender)
 
@@ -24,5 +24,4 @@ func (bp *BotProcessor) TestEventHandler(m *tb.Message) {
 	bp.registerEventForAll("Test message General3", "Привет Общий тест 3")
 	bp.registerEventForAll("Test message General4", "Привет Общий тест 4")
 
-	bp.Send(m.Sender, iMessage)
 }

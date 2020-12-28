@@ -26,26 +26,24 @@ type BotHandler struct {
 	isVisible   bool
 }
 
-func (bp *BotProcessor) init(token string, ul UserList) {
+func (bp *BotProcessor) Start() {
 	b, err := tb.NewBot(tb.Settings{
-		Token:  token,
+		Token:  bp.Token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 
 	if err != nil {
 		panic(err)
 	}
-	eh := EventHandler{}
-	eh.init()
 
 	bp.bot = b
-	bp.UserList = ul
 	bp.handlers = map[string]BotHandler{}
-	bp.eventHandler = eh
 
 	go bp.internalEvenHandlerListener()
 
 	bp.createHandlers()
+
+	bp.bot.Start()
 }
 
 func (bp *BotProcessor) createHandlers() {
@@ -137,7 +135,6 @@ func (bp *BotProcessor) registerEventForAll(name string, message string) {
 
 func (bp *BotProcessor) internalEvenHandlerListener() {
 	for true {
-		time.Sleep(time.Second)
 
 		if !bp.eventHandler.HasUnfinishedEvents() {
 			continue
