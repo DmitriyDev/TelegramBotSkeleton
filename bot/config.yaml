@@ -47,7 +47,7 @@ commands:
     handler: GetSubscribersListHandler
     admin: true
     visible: true
-  - name: unsubscribe
+  - name: sub_count
     command: /sub_count
     description: Колличество подписчиков
     handler: GetSubscribersCountHandler
