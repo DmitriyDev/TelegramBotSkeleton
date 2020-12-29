@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
@@ -20,15 +19,15 @@ type Config struct {
 }
 
 func GetConfig() Config {
-	cfd, err := ioutil.ReadFile(CONFIG_FILE_PATH)
+	cfd, err := ioutil.ReadFile(ConfigFilePath)
 	if err != nil {
-		toLogFatal(fmt.Sprintf("Read config error: %v", err))
+		toLogFatalF("Read config error: %v", err)
 	}
 
 	c := Config{}
 	err = yaml.Unmarshal([]byte(cfd), &c)
 	if err != nil {
-		toLogFatal(fmt.Sprintf("Unmarshall config error: %v", err))
+		toLogFatalF("Unmarshall config error: %v", err)
 	}
 
 	return c

@@ -41,8 +41,9 @@ func (ub *UserEventBox) EventsCount() int {
 	return len(ub.events)
 }
 
-func (eh *EventHandler) init() {
+func (eh EventHandler) New() *EventHandler {
 	eh.events = map[int]*UserEventBox{}
+	return &eh
 }
 
 func (eh *EventHandler) RegisterUser(u *tb.User) {
@@ -60,7 +61,7 @@ func (eh *EventHandler) AddEventToUser(e InternalEvent, u *tb.User) {
 	eh.events[u.ID].AddEvent(e)
 }
 
-func (eh *EventHandler) AddEventToAll(e InternalEvent, ul *UserList) {
+func (eh *EventHandler) AddEventToAll(e InternalEvent, ul UserList) {
 	for _, u := range ul.users {
 		eh.AddEventToUser(e, &u)
 	}
@@ -70,7 +71,6 @@ func (eh *EventHandler) GetUserEvents(u *tb.User) *UserEventBox {
 	if _, ok := eh.events[u.ID]; !ok {
 		eh.RegisterUser(u)
 	}
-
 	return eh.events[u.ID]
 }
 

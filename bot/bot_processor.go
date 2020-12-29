@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"reflect"
 	"sort"
@@ -10,11 +9,11 @@ import (
 )
 
 type BotProcessor struct {
-	Token        string
-	bot          *tb.Bot
-	handlers     map[string]BotHandler
-	UserList     UserList
-	eventHandler EventHandler
+	Token           string
+	bot             *tb.Bot
+	handlers        map[string]BotHandler
+	eventHandler    *EventHandler
+	UserListStorage UserListStorage
 }
 
 type BotHandler struct {
@@ -26,8 +25,18 @@ type BotHandler struct {
 	isVisible   bool
 }
 
+func (bp BotProcessor) New(token string, eh *EventHandler, uls UserListStorage) *BotProcessor {
+	bp.Token = token
+	bp.eventHandler = eh
+	bp.UserListStorage = uls
+	bp.handlers = map[string]BotHandler{}
+
+	return &bp
+}
+
 func (bp *BotProcessor) Start() {
-	b, err := tb.NewBot(tb.Settings{
+	var err error
+	bp.bot, err = tb.NewBot(tb.Settings{
 		Token:  bp.Token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
@@ -36,11 +45,7 @@ func (bp *BotProcessor) Start() {
 		panic(err)
 	}
 
-	bp.bot = b
-	bp.handlers = map[string]BotHandler{}
-
 	go bp.internalEvenHandlerListener()
-
 	bp.createHandlers()
 
 	bp.bot.Start()
@@ -49,7 +54,7 @@ func (bp *BotProcessor) Start() {
 func (bp *BotProcessor) createHandlers() {
 	c := GetConfig()
 	for _, cc := range c.Commands {
-		toLog(fmt.Sprintf("%s - %s : handler created", cc.Name, cc.HandlerMethod))
+		toLogF("%s - %s : handler created", cc.Name, cc.HandlerMethod)
 		bp.createHandlerFromConfig(cc)
 	}
 }
@@ -61,7 +66,7 @@ func (bp *BotProcessor) createHandlerFromConfig(cc HandlerConfig) {
 			bp.Send(m.Sender, "Данная команда запрещена")
 			return
 		}
-		toLog(fmt.Sprintf("%s : Called", cc.Name))
+		toLogF("%s : Called", cc.Name)
 
 		in := []reflect.Value{reflect.ValueOf(m)}
 		reflect.ValueOf(bp).MethodByName(cc.HandlerMethod).Call(in)
@@ -90,10 +95,10 @@ func (bp *BotProcessor) SendMany(ul *UserList, message string) {
 }
 
 func (bp *BotProcessor) SendToAdmin(message string) {
-	u, err := bp.UserList.byId(MASTER_USER)
+	u, err := bp.UserListStorage.GetById(MASTER_USER)
 	if err != nil {
 		bp.Send(&u, "Admin id not set")
-		toLogFatal(fmt.Sprintf("User not found. %v", err))
+		toLogFatalF("User not found. %v", err)
 		return
 	}
 	bp.Send(&u, message)
@@ -129,13 +134,12 @@ func (bp *BotProcessor) registerEventForAll(name string, message string) {
 		time.Now(),
 	}
 
-	bp.eventHandler.AddEventToAll(ie, &bp.UserList)
+	bp.eventHandler.AddEventToAll(ie, *bp.UserListStorage.GetUserList())
 	toLog("Register event " + name + " for all users")
 }
 
 func (bp *BotProcessor) internalEvenHandlerListener() {
 	for true {
-
 		if !bp.eventHandler.HasUnfinishedEvents() {
 			continue
 		}
@@ -153,9 +157,9 @@ func (bp *BotProcessor) internalEvenHandlerListener() {
 				id := keys[i]
 				ub := ue.events[id]
 				bp.Send(ue.user, ub.message)
-				toLog(fmt.Sprintf("event (#%d) %s finished", id, ub.name))
+				toLogF("event (#%d) %s finished", id, ub.name)
 				ue.DeleteEvent(id)
-				toLog(fmt.Sprintf("event (#%d) removed from queue", id))
+				toLogF("event (#%d) removed from queue", id)
 			}
 		}
 

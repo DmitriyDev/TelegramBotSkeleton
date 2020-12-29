@@ -5,15 +5,27 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+type UserListStorage interface {
+	GetUserList() *UserList
+	AddUser(u *tb.User)
+	RemoveUser(u *tb.User)
+	GetById(id int) (tb.User, error)
+}
+
 type UserList struct {
 	users map[int]tb.User
 }
 
-func (ul *UserList) init() {
+func (ul UserList) New() *UserList {
 	ul.users = map[int]tb.User{}
+	return &ul
 }
 func (ul *UserList) append(u tb.User) {
 	ul.users[u.ID] = u
+}
+
+func (ul *UserList) remove(u tb.User) {
+	delete(ul.users, u.ID)
 }
 
 func (ul *UserList) byId(id int) (tb.User, error) {

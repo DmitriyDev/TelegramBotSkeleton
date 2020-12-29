@@ -13,7 +13,7 @@ func (bp *BotProcessor) InfoHandler(m *tb.Message) {
 func (bp *BotProcessor) TestEventHandler(m *tb.Message) {
 	bp.Send(m.Sender, "Event registration started \n")
 
-	bp.UserList.append(*m.Sender)
+	bp.UserListStorage.AddUser(m.Sender)
 
 	bp.registerEvent(m.Sender, "Test message1", "Привет тест 1")
 	bp.registerEvent(m.Sender, "Test message2", "Привет тест 2")

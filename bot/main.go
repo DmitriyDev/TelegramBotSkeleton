@@ -7,16 +7,19 @@ import (
 
 var TOKEN = os.Getenv("BOT_TOKEN")
 var MASTER_USER, _ = strconv.Atoi(os.Getenv("MASTER_USER"))
-var CONFIG_FILE_PATH = "./config.yaml"
-var TIME_LAYOUT = "2006-01-02 15:04"
+
+const ConfigFilePath = "./config.yaml"
+const TimeLayout = "2006-01-02 15:04"
 
 func main() {
-	ul := UserList{}
-	ul.init()
+	eh := EventHandler{}.New()
+	uls := UserListFileStorage{}.New()
 
-	eh := EventHandler{}
-	eh.init()
 
-	bp := BotProcessor{Token: TOKEN, eventHandler: eh, UserList: ul}
+	//bp := BotProcessor{Token: TOKEN, eventHandler: eh, UserListStorage: UserListFileStorage{}.New()}
+	bp := BotProcessor{}.New(TOKEN, eh, uls)
+
+
+	//Token: TOKEN, eventHandler: eh, UserListStorage: UserListFileStorage{}.New()}
 	bp.Start()
 }
