@@ -11,4 +11,5 @@ RUN go install -v ./...
 
 RUN go build -o bot .
 
+
 CMD ["/go/src/app/bot"]

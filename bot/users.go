@@ -6,8 +6,11 @@ import (
 )
 
 type UserListStorage interface {
+	GetUsersIterator() map[int]tb.User
 	GetUserList() *UserList
+	GetUsersAmount() int
 	AddUser(u *tb.User)
+	HasUser(u *tb.User) bool
 	RemoveUser(u *tb.User)
 	GetById(id int) (tb.User, error)
 }

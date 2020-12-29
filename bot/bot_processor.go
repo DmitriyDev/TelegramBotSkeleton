@@ -104,13 +104,14 @@ func (bp *BotProcessor) SendToAdmin(message string) {
 	bp.Send(&u, message)
 }
 
-func (bp *BotProcessor) commandsForUser(u *tb.User) []BotHandler {
-	uHandlers := []BotHandler{}
-	for _, bh := range bp.handlers {
+func (bp *BotProcessor) commandsForUser(u *tb.User) map[string]BotHandler {
+	uHandlers := map[string]BotHandler{}
+
+	for k, bh := range bp.handlers {
 		if !isAdmin(*u) && (bh.isAdmin == true || bh.isVisible == false) {
 			continue
 		}
-		uHandlers = append(uHandlers, bh)
+		uHandlers[k] = bh
 	}
 
 	return uHandlers
@@ -125,6 +126,25 @@ func (bp *BotProcessor) registerEvent(u *tb.User, name string, message string) {
 
 	bp.eventHandler.AddEventToUser(ie, u)
 	toLog("Register event " + name + " for user #" + strconv.Itoa(u.ID))
+}
+
+func (bp *BotProcessor) registerAdminEvent(name string, message string) {
+	ie := InternalEvent{
+		name,
+		message,
+		time.Now(),
+	}
+	u := bp.getAdminUser()
+	bp.eventHandler.AddEventToUser(ie, &u)
+	toLog("Register event " + name + " for user admin")
+}
+
+func (bp *BotProcessor) getAdminUser() tb.User {
+	u, err := bp.UserListStorage.GetById(MASTER_USER)
+	if err != nil {
+		toLogFatal("Admin user not set")
+	}
+	return u
 }
 
 func (bp *BotProcessor) registerEventForAll(name string, message string) {

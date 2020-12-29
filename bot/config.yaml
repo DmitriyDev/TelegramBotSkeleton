@@ -29,3 +29,27 @@ commands:
     handler: TestEventHandler
     admin: true
     visible: true
+  - name: subscribe
+    command: /subscribe
+    description: Подписаться на рассылку
+    handler: SubscribeHandler
+    admin: false
+    visible: true
+  - name: unsubscribe
+    command: /unsubscribe
+    description: Отписаться от рассылки
+    handler: UnsubscribeHandler
+    admin: false
+    visible: true
+  - name: sub_list
+    command: /sub_list
+    description: Список подписчиков
+    handler: GetSubscribersListHandler
+    admin: true
+    visible: true
+  - name: unsubscribe
+    command: /sub_count
+    description: Колличество подписчиков
+    handler: GetSubscribersCountHandler
+    admin: true
+    visible: true
